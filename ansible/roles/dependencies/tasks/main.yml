@@ -1,0 +1,21 @@
+---
+# tasks file for dependencies
+  - name: "Copy myapp files"
+    ansible.builtin.copy:
+      src: files/{{ app_name }}
+      dest: /
+      owner: vagrant
+      group: vagrant
+      mode: '0755'
+
+  - name: "install dependencies"
+    ansible.builtin.yum:
+      name: "{{ item }}" 
+      state: "latest"
+      update_cache: true
+    with_items: 
+      - "libxml2.x86_64"
+      - "libxslt-devel.x86_64"
+      - "postgresql-devel"
+      - "nodejs"
+      - "@Development tools"

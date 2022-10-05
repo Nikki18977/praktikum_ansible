@@ -1,0 +1,29 @@
+---
+# tasks file for install.app
+
+  - name: "Add bundle in PATH"
+    become_user: vagrant
+    ansible.builtin.shell: "{{ item }}"
+    with_items:
+     - echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bash_profile
+     - echo 'eval "$(rbenv init -)"' >> ~/.bash_profile
+     - echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bash_profile
+     - source ~/.bash_profile
+
+
+  - name: "Set bundler configuration options"
+    become_user: vagrant
+    ansible.builtin.shell: bundle config build.nokogiri --use-system-libraries
+    args:
+      chdir: /{{ app_name }} 
+ 
+
+  - name: "Install the dependencies specified in your Gemfile"
+    become_user: vagrant
+    community.general.bundler:
+      state: present
+      deployment_mode: yes
+      chdir: /{{app_name}}
+      executable: /home/vagrant/.rbenv/shims/bundle
+      extra_args: --clean --no-cache
+      exclude_groups: development 

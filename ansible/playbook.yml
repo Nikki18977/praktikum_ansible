@@ -1,0 +1,47 @@
+---
+- name: "My App"
+  hosts: "centos"
+  become: true
+  vars:
+    app_name: "myapp"
+    db_name: "myappdb"
+    db_user: "myappuser"
+    db_password: "password"
+    secret_key_base: "praktikum"
+    rbenv:
+          env: user
+          version: v1.1.2
+          default_ruby: 2.6.10
+          rubies:
+          - version: 2.6.10
+            env:
+              RUBY_CONFIGURE_OPTS: "--enable-shared"
+  
+  roles:
+    - postgresql
+    - geerlingguy.nginx
+    - dependencies
+    - role: zzet.rbenv
+      rbenv_users:
+        - vagrant
+    - install.app
+
+  tasks:
+  
+  - name: "Copying the configuration file nginx"
+    ansible.builtin.template:
+      src: nginx.conf.j2
+      dest: /etc/systemd/system/{{app_name}}.service
+
+  - name: "Copy a service file"
+    ansible.builtin.template:
+      src: service.j2
+      dest: /etc/systemd/system/{{app_name}}.service  
+
+  - name: "Reload and start service"
+    ansible.builtin.systemd:
+      name: "{{ app_name }}"
+      state: started
+      daemon_reload: true
+      enabled: true
+      
